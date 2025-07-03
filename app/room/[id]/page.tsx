@@ -246,45 +246,50 @@ export default function RoomPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 sm:py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               Conversation Room
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
               Room ID: {roomId}
             </p>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleLeaveRoom}
-            className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
+            className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20 w-full sm:w-auto"
+            aria-label="Leave conversation room"
           >
-            <LogOut className="mr-2 h-4 w-4" />
-            Leave Room
+            <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
+            <span className="sm:inline">Leave Room</span>
           </Button>
-        </div>
+        </header>
 
         {/* Connection Status */}
-        <Card className="mb-8 p-6">
-          <div className="flex items-center justify-between">
+        <Card className="mb-6 sm:mb-8 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
             <div className="flex items-center space-x-3">
-              <div className={`w-3 h-3 rounded-full ${getStatusColor(connectionStatus)}`} />
-              <span className="font-medium text-gray-900 dark:text-white">
+              <div className={`w-3 h-3 rounded-full ${getStatusColor(connectionStatus)}`} aria-hidden="true" />
+              <span className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">
                 {getStatusText(connectionStatus)}
                 {isJoining && ' (Joining room...)'}
               </span>
               {(connectionStatus === 'connecting' || isJoining) && (
-                <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                <Loader2 className="h-4 w-4 animate-spin text-gray-500" aria-label="Loading" />
               )}
             </div>
             <div className="flex items-center space-x-2">
-              <Users className="h-4 w-4 text-gray-500" />
+              <Users className="h-4 w-4 text-gray-500" aria-hidden="true" />
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {connectedUsers}/2 connected
-                {isRoomCreator && <span className="ml-2 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">Creator</span>}
+                {isRoomCreator && (
+                  <span className="ml-2 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded" role="status">
+                    Creator
+                  </span>
+                )}
               </span>
             </div>
           </div>
@@ -322,25 +327,27 @@ export default function RoomPage() {
 
         {/* Waiting State - Show sharing options */}
         {connectionStatus === 'waiting' && (
-          <Card className="mb-8 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <Card className="mb-6 sm:mb-8 p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">
               Share this room with the other person
             </h3>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                 <input
                   type="text"
                   value={roomUrl}
                   readOnly
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-sm"
+                  aria-label="Room sharing URL"
                 />
                 <Button
                   onClick={handleCopyLink}
                   size="sm"
                   variant={copySuccess ? "default" : "outline"}
-                  className={copySuccess ? "bg-green-600 hover:bg-green-700" : ""}
+                  className={`w-full sm:w-auto ${copySuccess ? "bg-green-600 hover:bg-green-700" : ""}`}
+                  aria-label={copySuccess ? "Link copied to clipboard" : "Copy room link to clipboard"}
                 >
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="h-4 w-4 mr-2" aria-hidden="true" />
                   {copySuccess ? 'Copied!' : 'Copy Link'}
                 </Button>
               </div>
@@ -350,8 +357,10 @@ export default function RoomPage() {
                   variant="outline"
                   size="sm"
                   onClick={toggleQRCode}
+                  aria-expanded={showQRCode}
+                  aria-controls="qr-code-section"
                 >
-                  <QrCode className="h-4 w-4 mr-2" />
+                  <QrCode className="h-4 w-4 mr-2" aria-hidden="true" />
                   {showQRCode ? 'Hide QR Code' : 'Show QR Code'}
                 </Button>
               </div>

@@ -11,6 +11,8 @@ interface WebRTCOptions {
   onConnect?: () => void;
   onDisconnect?: () => void;
   onStream?: (stream: MediaStream) => void;
+  onLocalAudioStream?: (stream: MediaStream) => void;
+  onRemoteAudioStream?: (stream: MediaStream) => void;
 }
 
 interface WebRTCState {
@@ -33,7 +35,9 @@ export function useWebRTC(options: WebRTCOptions) {
     onError,
     onConnect,
     onDisconnect,
-    onStream
+    onStream,
+    onLocalAudioStream,
+    onRemoteAudioStream
   } = options;
 
   const [state, setState] = useState<WebRTCState>({
@@ -63,6 +67,10 @@ export function useWebRTC(options: WebRTCOptions) {
 
       localStreamRef.current = stream;
       setState(prev => ({ ...prev, localStream: stream }));
+
+      // Notify about local audio stream for ElevenLabs integration
+      onLocalAudioStream?.(stream);
+
       return stream;
     } catch (error) {
       console.error('Failed to get user media:', error);
@@ -136,6 +144,7 @@ export function useWebRTC(options: WebRTCOptions) {
         console.log('Received remote stream');
         setState(prev => ({ ...prev, remoteStream }));
         onStream?.(remoteStream);
+        onRemoteAudioStream?.(remoteStream);
       });
 
       peer.on('error', (error) => {

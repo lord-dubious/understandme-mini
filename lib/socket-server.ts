@@ -1,6 +1,7 @@
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { rooms } from '@/app/api/rooms/route';
+import { initializeRoomCleanup, getRoomCleanupService } from './room-cleanup';
 
 export interface RoomUser {
   id: string;
@@ -33,6 +34,9 @@ export function initializeSocketServer(httpServer: HTTPServer) {
     },
     transports: ['websocket', 'polling']
   });
+
+  // Initialize room cleanup service
+  initializeRoomCleanup(rooms, roomSockets, io);
 
   io.on('connection', (socket: Socket<any, any, any, SocketData>) => {
     console.log(`Socket connected: ${socket.id}`);
@@ -73,8 +77,15 @@ export function initializeSocketServer(httpServer: HTTPServer) {
           joinedAt: new Date()
         });
 
-        // Update room state
+        // Update room state and activity
         room.lastActivity = new Date();
+        if (userCount >= 2) {
+          room.status = 'active';
+        }
+
+        // Update cleanup service
+        const cleanupService = getRoomCleanupService();
+        cleanupService?.updateRoomActivity(roomId);
         
         // Notify all users in room about the new connection
         const userCount = roomUsers.size;
@@ -118,6 +129,10 @@ export function initializeSocketServer(httpServer: HTTPServer) {
     // Handle user speaking status
     socket.on('speaking-status', (data: { speaking: boolean }) => {
       if (socket.data.roomId && socket.data.userId) {
+        // Update room activity
+        const cleanupService = getRoomCleanupService();
+        cleanupService?.updateRoomActivity(socket.data.roomId);
+
         socket.to(socket.data.roomId).emit('user-speaking', {
           userId: socket.data.userId,
           userType: socket.data.userType,
@@ -158,6 +173,10 @@ export function initializeSocketServer(httpServer: HTTPServer) {
     socket.on('webrtc-signal', (data: { signal: any; targetUserId?: string }) => {
       if (socket.data.roomId && socket.data.userId) {
         console.log(`WebRTC signal from ${socket.data.userId} in room ${socket.data.roomId}`);
+
+        // Update room activity
+        const cleanupService = getRoomCleanupService();
+        cleanupService?.updateRoomActivity(socket.data.roomId);
 
         // Forward the signal to other users in the room
         // If targetUserId is specified, send only to that user
