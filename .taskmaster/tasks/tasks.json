@@ -1,0 +1,317 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Project Setup & Core Frameworks",
+        "description": "Set up the core Next.js 15 project with App Router, TypeScript, Tailwind CSS 4, and shadcn/ui. Initialize the project structure.",
+        "details": "Use `create-next-app` with TypeScript, App Router, and Tailwind CSS. Configure `shadcn/ui` by running the `npx shadcn-ui@latest init` command and selecting components as needed (e.g., Button, Card). Ensure the project is set up for React 19 features.",
+        "testStrategy": "Verify project compiles and runs locally. Check that Tailwind CSS and shadcn/ui components can be imported and rendered.",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Environment Variable Configuration",
+        "description": "Configure environment variables required for the application, including ElevenLabs API keys, site URL, and optional TURN server credentials.",
+        "details": "Create a `.env.local` file. Add variables: `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, `NEXT_PUBLIC_SITE_URL`. If using a TURN server, add `TURN_SERVER_URL`, `TURN_SERVER_USERNAME`, `TURN_SERVER_PASSWORD`. Ensure `NEXT_PUBLIC_` prefix is used for client-side variables.",
+        "testStrategy": "Verify environment variables are accessible in both server-side (API routes) and client-side (components) code where needed.",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Install Core Dependencies",
+        "description": "Install necessary third-party libraries for real-time communication, unique ID generation, QR codes, and WebRTC.",
+        "details": "Install packages: `socket.io`, `socket.io-client`, `simple-peer`, `qrcode`, `@types/simple-peer`, `@elevenlabs/elevenlabs-js`, `@elevenlabs/react`, `nanoid`, `iron-session` (if session management is needed, though PRD says no accounts/history, iron-session might be useful for temporary room state linking). Use `npm install` or `yarn add`.",
+        "testStrategy": "Verify all packages are listed in `package.json` and install correctly without errors.",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Landing Page UI Implementation",
+        "description": "Implement the user interface for the landing page, including the main call-to-action button and descriptive text.",
+        "details": "Create a new page component for the root route (`app/page.tsx`). Design a clean layout using Tailwind CSS and shadcn/ui components (e.g., Button, Card). Include the 'Create a Private Conversation Room' button and the specified supporting text and trust indicators.",
+        "testStrategy": "Verify the landing page renders correctly with the button and text. Check responsiveness on different screen sizes.",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "API: Create Room Endpoint",
+        "description": "Create the API endpoint to generate a unique room ID using nanoid and initialize a temporary in-memory state for the room.",
+        "details": "Create an API route handler at `/app/api/rooms/route.ts`. Implement a POST request handler. Use `nanoid` to generate a short, unique ID. Store room state (e.g., `users: []`, `status: 'waiting'`) in a simple in-memory object or Map on the server. Return the generated room ID in the response.",
+        "testStrategy": "Use a tool like Postman or `curl` to send a POST request to `/api/rooms`. Verify a unique ID is returned and that the server logs indicate a new room state was created in memory.",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          3
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Frontend: Room Creation Flow",
+        "description": "Implement the client-side logic for the 'Create Room' button, calling the API and redirecting the user to the new room URL.",
+        "details": "Add an event handler to the button created in Task 4. On click, make a POST request to `/api/rooms`. Upon receiving the room ID, use `next/navigation`'s `router.push()` to navigate the user to `/room/[id]`.",
+        "testStrategy": "Click the 'Create Room' button on the landing page. Verify that a request is sent to the API, a room ID is received, and the browser navigates to the correct room URL (e.g., `/room/abcdef123`).",
+        "priority": "medium",
+        "dependencies": [
+          4,
+          5
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Room Page Structure & Basic UI",
+        "description": "Create the basic page structure and UI elements for the room interface.",
+        "details": "Create a dynamic route handler for rooms at `/app/room/[id]/page.tsx`. Set up the basic layout using Tailwind CSS. Include placeholders for connection status, speaking indicators, and audio controls.",
+        "testStrategy": "Navigate directly to a room URL (e.g., `/room/test`). Verify the basic page structure renders without errors.",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "WebSocket Server Setup (Socket.IO)",
+        "description": "Set up the Socket.IO server within the Next.js application to manage real-time room state and user presence.",
+        "details": "Create a dedicated file (e.g., `server/socket.ts`) to initialize the Socket.IO server. Integrate it with the Next.js serverless function environment (e.g., using a custom server or within an API route that handles the WebSocket connection upgrade). Implement basic connection and disconnection handlers. Link it to the in-memory room state created in Task 5.",
+        "testStrategy": "Run the application and use a WebSocket client tool or browser console to attempt connecting to the Socket.IO endpoint. Verify successful connection and disconnection logs on the server.",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          3
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "WebSocket Client Integration",
+        "description": "Integrate the Socket.IO client into the room page component to connect to the WebSocket server and receive real-time updates.",
+        "details": "In the `/app/room/[id]/page.tsx` component or a related client component, import `socket.io-client`. Establish a connection to the Socket.IO server endpoint for the specific room ID when the component mounts. Handle connection, disconnection, and error events. Set up listeners for room state updates.",
+        "testStrategy": "Navigate to a room page. Open the browser's developer console and network tab. Verify that a WebSocket connection is established to the server.",
+        "priority": "medium",
+        "dependencies": [
+          3,
+          7,
+          8
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Frontend: Waiting State & Link/QR Sharing",
+        "description": "Implement the UI and logic for the 'Waiting for other person' state, including displaying the shareable link and generating/displaying a QR code.",
+        "details": "In the room page component, display the 'Waiting...' message when only one user is present (detected via WebSocket state). Show the room URL (`${NEXT_PUBLIC_SITE_URL}/room/[id]`). Implement a 'Copy Link' button using the browser's Clipboard API. Use the `qrcode` library to generate a QR code image of the room URL and display it.",
+        "testStrategy": "Create a room. Verify the waiting message, shareable link, Copy button, and QR code are displayed correctly. Test the Copy button functionality. Scan the QR code with a mobile device to ensure it links to the correct URL.",
+        "priority": "medium",
+        "dependencies": [
+          6,
+          7,
+          9
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "API: Join Room Endpoint",
+        "description": "Create the API endpoint to handle a second user joining a room and update the room state via WebSocket.",
+        "details": "Create an API route handler at `/app/api/rooms/[id]/join/route.ts`. Implement a POST request handler that takes the room ID from the URL. Check if the room exists and has only one user. If valid, add the second user to the in-memory room state and emit a WebSocket event (e.g., `room-updated`) via the Socket.IO server to notify connected clients.",
+        "testStrategy": "Create a room in one browser tab. Open the join link in a second tab. Verify that the server logs indicate a user joining and a WebSocket event is emitted.",
+        "priority": "medium",
+        "dependencies": [
+          5,
+          8
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Frontend: Participant Join Flow",
+        "description": "Implement the client-side flow for a user joining via a shared link, including calling the join API and connecting to the room WebSocket.",
+        "details": "The room page component (`/app/room/[id]/page.tsx`) should automatically attempt to join the room upon loading if a user ID isn't already associated with the WebSocket connection (this implies a user ID or session handling might be needed, contradicting 'no accounts'. Re-evaluate: The PRD implies the *browser tab* is the user. The WS connection itself represents the user. The join API might just validate the room and the WS connection handles presence). Let's assume the WS connection *is* the join. The page loads, connects to WS (Task 9). The server (Task 8/11) detects a new connection for that room ID and updates state. This task focuses on the client-side reaction to loading the room URL.",
+        "testStrategy": "Share a room link and open it in a different browser or incognito window. Verify that the page loads and attempts to establish a WebSocket connection to the specified room ID.",
+        "priority": "medium",
+        "dependencies": [
+          6,
+          9,
+          11
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Frontend: Detect Two Users & Connection Status",
+        "description": "Implement the logic to detect when two users are present in the room via WebSocket updates and transition the UI from 'Waiting' to 'Connected'.",
+        "details": "In the room page component, listen for the `room-updated` WebSocket event. When the event indicates that the room state now contains two users, update the component's state to reflect the 'Connected' status. Change the displayed message and UI elements accordingly.",
+        "testStrategy": "Create a room in tab A. Open the join link in tab B. Verify that the UI in both tabs updates from 'Waiting...' to 'Connected' shortly after tab B loads.",
+        "priority": "medium",
+        "dependencies": [
+          9,
+          12
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "WebRTC Peer Connection Setup",
+        "description": "Set up the WebRTC peer-to-peer audio connection between the two users in the room using simple-peer.",
+        "details": "Once two users are detected (Task 13), initialize `simple-peer` instances in both clients. Use the WebSocket connection (Task 9) as the signaling channel to exchange SDP offers/answers and ICE candidates between the peers. Configure STUN/TURN servers if environment variables are provided (Task 2) to handle NAT traversal.",
+        "testStrategy": "Create and join a room with two clients. Open browser developer tools and check WebRTC connection status. Verify that a peer connection is established and ICE candidates are exchanged via the WebSocket signaling channel.",
+        "priority": "medium",
+        "dependencies": [
+          3,
+          9,
+          13
+        ],
+        "status": "in-progress",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "ElevenLabs SDK Integration & Agent Configuration",
+        "description": "Integrate the ElevenLabs SDKs and configure the 'Udine' AI agent with the specified system prompt and settings.",
+        "details": "Install `@elevenlabs/elevenlabs-js` and `@elevenlabs/react`. Use the `@elevenlabs/react` hooks (e.g., `useConversationalAI`) in a client component. Configure the agent using the `ELEVENLABS_API_KEY` and `ELEVENLABS_AGENT_ID` from environment variables (Task 2). Set the detailed system prompt provided in the PRD. Configure voice settings (Voice ID, Stability, Similarity Boost, Speaking Rate) and conversational settings (Turn Detection, Interruption Handling, Response Timing, Max Response Length).",
+        "testStrategy": "Verify that the ElevenLabs SDKs are imported correctly. Check that the agent can be initialized using the API key and agent ID. Log the agent configuration to confirm settings are applied.",
+        "priority": "medium",
+        "dependencies": [
+          3
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "Real-time Audio Streaming & ElevenLabs Connection",
+        "description": "Connect the audio stream from the WebRTC peer connection to the ElevenLabs AI agent's input and stream the agent's audio output to the users.",
+        "details": "Once the WebRTC connection is established (Task 14) and the ElevenLabs agent is configured (Task 15), get the local audio stream from the user's microphone via WebRTC. Pipe this stream as input to the ElevenLabs agent using the SDK. Receive the audio output stream from the ElevenLabs agent and play it back to both users in the room.",
+        "testStrategy": "Create and join a room. Speak into the microphone. Verify that audio activity is detected and potentially sent to ElevenLabs (check network requests/logs). Verify that audio output from ElevenLabs is received and played back through the browser's audio output.",
+        "priority": "medium",
+        "dependencies": [
+          14,
+          15
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Implement Core AI Mediation Flow",
+        "description": "Implement the core AI mediation flow, including Udine's initial greeting, name collection, and the Express/Reflect technique, driven by ElevenLabs events.",
+        "details": "Listen for events from the ElevenLabs SDK indicating the start of the session, turn changes, and speech detection. Trigger Udine's initial greeting when the session starts (after Task 13). Implement logic to prompt users for their names and process their spoken responses via the ElevenLabs transcriptions. Use ElevenLabs turn-taking events and potentially transcription content to guide Udine through the Express -> Reflect phases as described in the PRD.",
+        "testStrategy": "Create and join a room with two users. Verify Udine's initial greeting is played. Speak your name when prompted. Verify Udine acknowledges names. Engage in a simple conversation to see if Udine attempts to guide using the Express/Reflect pattern.",
+        "priority": "medium",
+        "dependencies": [
+          16
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Implement Audio Controls & Visual Feedback",
+        "description": "Implement the user interface and logic for audio controls (mute/unmute, volume) and visual feedback (speaking indicators).",
+        "details": "Add mute/unmute buttons to the room UI (Task 7). Implement logic to toggle the local audio track's enabled state in the WebRTC peer connection (Task 14). Add volume controls for the incoming audio streams. Implement visual indicators (e.g., a pulsing icon) that activate when a user or Udine is detected as speaking (potentially using ElevenLabs events or WebRTC audio levels).",
+        "testStrategy": "Create and join a room. Test the mute/unmute button. Verify speaking indicators activate when users or Udine speak. Adjust volume controls.",
+        "priority": "medium",
+        "dependencies": [
+          7,
+          14,
+          16
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Implement Ephemeral Room State & Cleanup",
+        "description": "Ensure room state is stored only in memory and implement cleanup logic for inactive or closed rooms.",
+        "details": "Verify that the in-memory state object/Map (Task 5) is the sole source of truth for room data. Implement logic on the Socket.IO server (Task 8) to detect when both users have disconnected from a room. After a period of inactivity (e.g., 2 hours as per PRD, or immediately after both disconnect), remove the room state from memory.",
+        "testStrategy": "Create a room and have two users join. Have both users close their browser tabs. Verify that the server logs indicate disconnections and that the room state is eventually removed from memory. Test joining an old room URL after the cleanup period to ensure it's no longer valid.",
+        "priority": "medium",
+        "dependencies": [
+          5,
+          8,
+          11,
+          13
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Responsive Design & Basic Accessibility",
+        "description": "Refine the UI using Tailwind CSS to ensure responsiveness across devices and implement basic accessibility features.",
+        "details": "Apply responsive utility classes from Tailwind CSS to adjust layout and component sizes for mobile and desktop breakpoints. Ensure interactive elements (buttons, controls) have appropriate ARIA attributes and focus states. Check color contrast ratios. Follow WCAG 2.1 AA guidelines where applicable.",
+        "testStrategy": "Test the application on various devices and screen sizes (desktop, tablet, phone). Use browser developer tools to check accessibility tree and ARIA attributes. Use an accessibility checker tool to scan pages for common issues.",
+        "priority": "medium",
+        "dependencies": [
+          4,
+          7,
+          10,
+          18
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 21,
+        "title": "Implement Security Headers (CSP)",
+        "description": "Configure Content Security Policy (CSP) headers to mitigate cross-site scripting (XSS) and other injection attacks.",
+        "details": "Configure Next.js headers in `next.config.js` to include a strict CSP. Allow necessary sources for scripts, styles, connect-src (for your domain, WebSocket, ElevenLabs, STUN/TURN), media-src (for WebRTC), etc. Be as restrictive as possible while allowing necessary functionality.",
+        "testStrategy": "Use browser developer tools (Security tab) or online CSP validators to verify that the CSP header is present and correctly configured on all pages. Check for any CSP violations in the console during normal application use.",
+        "priority": "medium",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 22,
+        "title": "Performance Testing (Audio Latency & Reliability)",
+        "description": "Conduct basic performance testing focusing on audio latency and connection reliability.",
+        "details": "Measure end-to-end audio latency between users and Udine. Use browser developer tools (WebRTC stats) to monitor connection quality, packet loss, and jitter. Identify potential bottlenecks in the audio pipeline or signaling. Ensure TURN server is used if needed for complex network environments.",
+        "testStrategy": "Use built-in browser WebRTC statistics (`chrome://webrtc-internals` or similar) to monitor connection metrics during a live session. Subjectively test audio quality and responsiveness. Simulate different network conditions if possible.",
+        "priority": "medium",
+        "dependencies": [
+          16
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-02T15:39:46.013Z",
+      "updated": "2025-07-03T13:28:48.417Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

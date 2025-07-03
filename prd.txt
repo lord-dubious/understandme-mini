@@ -1,0 +1,261 @@
+# Product Requirements Document: Understand MeMini
+
+**Tagline:** A simple space for difficult conversations.
+
+## 1. Overview
+
+**Understand MeMini** is a disposable, single-use, web-based "mediation room" for two people. It's built entirely with the **ElevenLabs Next.js starter kit** and leverages the latest ElevenLabs Conversational AI API with real-time voice communication. There are no user accounts, no session history, and no complex features. Its only purpose is to provide a temporary, guided space for two people to talk through a specific issue with the help of an AI mediator named "Udine". When the conversation is over and the tab is closed, the room and the conversation disappear forever.
+
+## 2. Goals and Objectives
+
+*   **Primary Goal:** To provide a frictionless, secure, and temporary space for two individuals to resolve a specific conflict with the help of an AI mediator using real-time voice communication.
+*   **Secondary Goal:** To showcase the power of the ElevenLabs Conversational API in a real-world mediation application.
+*   **Tertiary Goal:** To demonstrate seamless multi-user real-time voice interaction using WebRTC and ElevenLabs turn-taking capabilities.
+*   **Non-Goals:** This is not a therapy app, a group chat platform, or a long-term communication tool. There will be no user accounts, data storage, or chat history.
+
+## 3. Target Audience
+
+*   **Primary:** Individuals in personal relationships (couples, family members, friends) who need to have difficult conversations
+*   **Secondary:** Professional colleagues who need to resolve workplace conflicts
+*   **Tertiary:** Anyone seeking a neutral, AI-guided space for constructive dialogue
+
+## 4. Key Value Propositions
+
+*   **Zero Friction:** No sign-ups, downloads, or complex setup - just click and talk
+*   **Privacy First:** Completely ephemeral - no data storage or conversation history
+*   **AI-Guided Mediation:** Professional mediation techniques implemented through AI
+*   **Real-time Voice:** Natural conversation flow with intelligent turn-taking
+*   **Accessible:** Works on any device with a web browser and microphone
+
+## 5. Core User Flow
+
+### 5.1 Room Creation & Joining
+1.  **Landing Page:** User 1 (the "Host") navigates to the app's homepage featuring a clean, minimal design with a single prominent button: **"Create a Private Conversation Room"**
+2.  **Room Generation:** Clicking the button instantly generates a unique, shareable URL using nanoid (e.g., `understand.memini/room/a7b3c9d1`) and redirects the host to the room
+3.  **Waiting State:** The Host sees a "Waiting for other person to join..." message with:
+    *   A prominent "Copy Link" button
+    *   QR code for easy mobile sharing
+    *   Simple instructions for sharing the link
+4.  **Participant Joins:** User 2 (the "Participant") clicks the shared link and is brought into the same room
+5.  **Connection Established:** Both users see a "Connected" status and brief instructions about the upcoming AI-guided session
+
+### 5.2 AI Mediation Session
+6.  **Udine Activation:** As soon as both users are present, Udine's voice begins the session simultaneously for both users:
+    *   **Udine:** "Welcome to the room. I am Udine, your impartial guide for this conversation. Before we begin, could each of you please state your name so I know who is who?"
+7.  **Name Collection:** Each user states their name, and Udine confirms receipt of both names
+8.  **Session Introduction:**
+    *   **Udine:** "Thank you, [Name1] and [Name2]. The goal of this space is to help you understand each other. I will guide the conversation to ensure it remains fair and productive. [Host Name], since you created the room, I'll invite you to share your perspective first."
+9.  **Mediated Conversation Flow:**
+    *   **Turn Management:** ElevenLabs Conversational AI manages speaking turns automatically
+    *   **Express -> Reflect Technique:**
+        *   **Express:** Udine invites one person to share their perspective
+        *   **Reflect:** Udine asks the other person to reflect what they heard before responding
+        *   **Example:** "Thank you for sharing, [Name1]. [Name2], what did you hear [Name1] say?"
+    *   **De-escalation:** Udine intervenes if conversation becomes heated with calming phrases
+10. **Natural Conclusion:** Session ends when users reach resolution or decide to stop - they simply close their browser tabs
+
+### 5.3 Technical Flow
+*   **WebRTC Connection:** Direct peer-to-peer audio connection between users
+*   **ElevenLabs Integration:** AI mediator processes audio in real-time
+*   **Turn-taking Logic:** Intelligent detection of speech patterns and natural pauses
+*   **Session Management:** Temporary room state maintained in memory only
+
+## 6. Technical Architecture
+
+### 6.1 Frontend Architecture (Next.js 15 + React 19)
+
+**Core Technologies:**
+*   **Next.js 15:** App Router with React Server Components
+*   **React 19:** Latest React features including concurrent rendering
+*   **TypeScript:** Full type safety throughout the application
+*   **Tailwind CSS 4:** Latest version with improved performance
+*   **shadcn/ui:** Pre-built accessible components
+
+**Key Components:**
+*   **Landing Page:** Single CTA button for room creation
+*   **Room Page:** Real-time voice interface with connection status
+*   **Audio Controls:** Mute/unmute, volume controls, connection indicators
+*   **Visual Feedback:** Speaking indicators, connection status, session progress
+
+**State Management:**
+*   **React Context:** Global state for room connection and user status
+*   **useState/useReducer:** Local component state management
+*   **Custom Hooks:** Reusable logic for WebRTC, ElevenLabs integration
+
+### 6.2 Backend Architecture (Next.js API Routes)
+
+**API Endpoints:**
+*   **POST /api/rooms:** Generate unique room ID and initialize room state
+*   **GET /api/rooms/[id]:** Validate room existence and get room status
+*   **POST /api/rooms/[id]/join:** Handle user joining room
+*   **WebSocket /api/rooms/[id]/ws:** Real-time communication for room coordination
+
+**ElevenLabs Integration:**
+*   **Conversational AI Agent:** Pre-configured "Udine" mediator agent
+*   **Real-time Voice Processing:** Stream audio to/from ElevenLabs API
+*   **Turn-taking Management:** Intelligent conversation flow control
+
+### 6.3 Real-time Communication Stack
+
+**WebRTC Implementation:**
+*   **Peer-to-peer Audio:** Direct connection between users for low latency
+*   **STUN/TURN Servers:** NAT traversal for reliable connections
+*   **Audio Processing:** Echo cancellation, noise suppression
+
+**ElevenLabs Conversational AI:**
+*   **@elevenlabs/react:** Latest React SDK for conversational AI
+*   **Real-time Streaming:** Bidirectional audio streaming
+*   **Agent Configuration:** Custom system prompts and behavior settings
+
+### 6.4 Required Dependencies
+
+**New Packages to Add:**
+*   **`socket.io` & `socket.io-client`:** Real-time WebSocket communication
+*   **`simple-peer`:** WebRTC peer connection management
+*   **`qrcode`:** QR code generation for easy link sharing
+*   **`@types/simple-peer`:** TypeScript definitions
+
+**Existing Packages (Already Available):**
+*   **`@elevenlabs/elevenlabs-js`:** ElevenLabs SDK
+*   **`@elevenlabs/react`:** React components for ElevenLabs
+*   **`nanoid`:** Unique ID generation
+*   **`iron-session`:** Session management (if needed)
+
+### 6.5 Environment Configuration
+
+**Required Environment Variables:**
+*   **`ELEVENLABS_API_KEY`:** ElevenLabs API authentication
+*   **`ELEVENLABS_AGENT_ID`:** Pre-configured Udine agent ID
+*   **`NEXT_PUBLIC_SITE_URL`:** Base URL for room link generation
+*   **`TURN_SERVER_URL`:** TURN server for WebRTC (optional)
+*   **`TURN_SERVER_USERNAME`:** TURN server credentials (optional)
+*   **`TURN_SERVER_PASSWORD`:** TURN server credentials (optional)
+
+## 7. AI Mediator Configuration
+
+### 7.1 "Udine" System Prompt (Enhanced)
+
+```
+You are "Udine," an expert AI mediator and conflict resolution specialist. Your entire existence is within the "Understand MeMini" application. Your persona is warm, patient, impartial, and deeply empathetic.
+
+**Core Mission:**
+Your sole purpose is to create a safe and structured environment where users can navigate disagreements, foster mutual understanding, and find a collaborative path forward.
+
+**Golden Rules - MUST adhere at all times:**
+1. **Facilitate, Never Judge:** Guide conversation, don't determine right/wrong
+2. **Empathy is Your Superpower:** Validate feelings, not just words
+3. **Promote User Agency:** Users are in control, suggestions are invitations
+4. **Ensure Safety & De-escalate:** Priority is de-escalation if conversation becomes aggressive
+
+**Dynamic Interaction Logic:**
+You MUST adapt your communication style based on the relationship context you detect:
+
+**For Personal Relationships:**
+- Use first names with warm, familiar tone
+- Focus on emotional impact and relationship health
+- Use feeling-oriented language: "hurt," "love," "connection"
+- Example: "Alex, I can hear how hurt you felt. Maria, what comes up for you when you hear Alex express that sadness?"
+
+**For Professional Relationships:**
+- Maintain respectful, goal-oriented language
+- Focus on collaboration, expectations, workflow, shared goals
+- Example: "Thank you for that perspective, Sarah. John, from your point of view, how did the breakdown in workflow occur?"
+
+**Operational Framework - Five-Phase Structure:**
+1. **Prepare:** Greeting, name collection, role explanation
+2. **Express:** Invite first person to share perspective
+3. **Understand:** Ask second person to reflect what they heard
+4. **Resolve:** Guide toward mutual understanding
+5. **Heal:** Acknowledge progress and encourage continued dialogue
+
+**Express -> Reflect Technique:**
+- Express: "Please share your perspective on..."
+- Reflect: "What did you hear [Name] say?" (before allowing response)
+- Alternate this pattern throughout conversation
+
+**De-escalation Phrases:**
+- "Let's pause for a moment and focus on the feeling behind the words"
+- "I notice some tension. Can we slow down and listen more deeply?"
+- "What would help you feel heard right now?"
+
+**Crucial Boundaries:**
+- NOT a therapist, judge, or advisor
+- Do NOT give solutions or opinions
+- Keep responses brief and process-focused
+- Voice responses should be natural and conversational
+```
+
+### 7.2 ElevenLabs Agent Configuration
+
+**Voice Settings:**
+*   **Voice ID:** Professional, warm, gender-neutral voice
+*   **Stability:** 0.75 (consistent but natural variation)
+*   **Similarity Boost:** 0.85 (maintain character consistency)
+*   **Speaking Rate:** Moderate (allows for thoughtful pacing)
+
+**Conversational Settings:**
+*   **Turn Detection:** Automatic based on speech patterns
+*   **Interruption Handling:** Gentle intervention for heated moments
+*   **Response Timing:** 1-2 second pause before responding
+*   **Maximum Response Length:** 30 seconds to maintain engagement
+
+## 8. User Interface Design Specifications
+
+### 8.1 Landing Page Design
+*   **Hero Section:** Clean, calming design with soft colors
+*   **Primary CTA:** Large, prominent "Create a Private Conversation Room" button
+*   **Supporting Text:** Brief explanation of the service (2-3 sentences)
+*   **Trust Indicators:** "No accounts required • Completely private • Disappears after use"
+
+### 8.2 Room Interface Design
+*   **Connection Status:** Clear indicators for both users' connection status
+*   **Speaking Indicators:** Visual feedback showing who is currently speaking
+*   **Audio Controls:** Mute/unmute, volume adjustment, leave room
+*   **Session Progress:** Subtle indicator of conversation phases
+*   **Emergency Exit:** Always-visible "Leave Room" option
+
+### 8.3 Responsive Design Requirements
+*   **Mobile-First:** Optimized for smartphone use
+*   **Desktop Enhancement:** Larger controls and better visual hierarchy
+*   **Accessibility:** WCAG 2.1 AA compliance
+*   **Cross-Browser:** Support for Chrome, Firefox, Safari, Edge
+
+## 9. Security & Privacy Considerations
+
+### 9.1 Data Privacy
+*   **No Data Storage:** All conversation data is ephemeral
+*   **No User Tracking:** No analytics or user identification
+*   **Secure Transmission:** All audio encrypted in transit
+*   **Room Expiration:** Rooms automatically expire after 2 hours of inactivity
+
+### 9.2 Security Measures
+*   **Unique Room IDs:** Cryptographically secure random generation
+*   **Rate Limiting:** Prevent room creation abuse
+*   **Content Security Policy:** Strict CSP headers
+*   **HTTPS Only:** Force secure connections
+
+## 10. Performance Requirements
+
+### 10.1 Audio Quality
+*   **Latency:** <200ms end-to-end audio latency
+*   **Quality:** 16kHz sample rate minimum
+*   **Reliability:** 99.5% uptime for voice connections
+
+### 10.2 Scalability
+*   **Concurrent Rooms:** Support 100+ simultaneous rooms
+*   **Geographic Distribution:** CDN for global accessibility
+*   **Auto-scaling:** Handle traffic spikes gracefully
+
+## 11. Future Considerations (V2+)
+
+### 11.1 Enhanced Features
+*   **Multiple Languages:** Support for Spanish, French, German
+*   **Different Mediator Styles:** Professional, casual, therapeutic approaches
+*   **Pre-session Setup:** Topic selection and conversation goals
+*   **Session Summaries:** Optional key insights (user-controlled)
+
+### 11.2 Advanced Capabilities
+*   **Emotion Detection:** Real-time emotional state analysis
+*   **Group Mediation:** Support for 3-4 person conversations
+*   **Integration Options:** Calendar scheduling, follow-up reminders
+*   **Analytics Dashboard:** Aggregate usage patterns (anonymized)
